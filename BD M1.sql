@@ -134,6 +134,50 @@ EXECUTE PROCEDURE Fachat();
 
 --------TODO : TRIGGER SUR EMPRUNT QUI FAIT UN PEU COMME ACHAT-------
 
+--Creation du trigger sur Emprunt qui vérifie le stock avec de permettre l'emprunt et qui met le stock à jour après.
+CREATE OR REPLACE FUNCTION Femprunt()
+RETURNS trigger AS
+    $$
+        DECLARE isbntmp VARCHAR(20);
+        DECLARE noemprunttmp INT;
+        DECLARE qteStock INT;
+        DECLARE qteEmprunt INT;
+        BEGIN
+
+              SELECT max(NoEmp) FROM Emprunt --On recupere le numero de l'emprunt
+              INTO noemprunttmp;
+
+              SELECT ISBN FROM Achat  --On recupere l'ISBN du dernier livre emprunté (on suppose que c'est le NoEmp le plus eleve)
+              WHERE NoEmp = noemprunttmp
+              INTO isbntmp;
+
+              SELECT qtedispo FROM Livres WHERE ISBN = isbntmp   --On recupere la quantite dispo en stock
+              INTO qteStock;
+
+              SELECT QteEmp FROM Emprunt WHERE NoEmp = noemprunttmp  --On recupere la quantite qu'on veut emprunter
+              INTO qteEmprunt;
+
+              IF qteStock >= qteEmprunt THEN      --Si on a assez de stock on permet l'emprunt
+                UPDATE Livres                         
+                SET qtedispo = qtedispo - qteEmprunt
+                WHERE ISBN = isbntmp;
+                IF qteStock = qteEmprunt THEN
+                  RAISE NOTICE 'Dernier livre emprunté, momentanément indisponible';
+              
+              ELSE             --On a pas assez de stock pour satisfaire l'emprunt, on annule l'emprunt
+                DELETE FROM Emprunt WHERE NoEmp = noemprunttmp;
+                RAISE NOTICE 'Pas assez de stock pour satisfaire l emprunt, abandon';
+              
+              END IF;
+
+        RETURN NULL;
+        END;
+    $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE TRIGGER Temprunt
+AFTER INSERT ON Emprunt FOR EACH ROW
+EXECUTE PROCEDURE Femprunt();
+
 --Remplissage des tables
 
 INSERT INTO Auteurs (NomAut, PrenomAut, NaissanceAut, Mort, Nationalite)
@@ -178,15 +222,39 @@ INSERT INTO Achat (ISBN, IDClient, DateAchat, QteAchat)
 VALUES('978-2253096764', 2, '14/09/2024', 1);
 
 INSERT INTO Emprunt (ISBN, IDClient, DateDeb, DateFin, QteEmp, StatusEmp, StatusLivre)
-VALUES('978-2075193993', 2, '09/09/2024', '15/09/2024', 1, 'non rendu', 'bon');
+VALUES('978-2075193993', 3, '09/09/2024', '15/09/2024', 1, 'non rendu', 'bon');
 
 --Quelques requetes d'exemple
 
---On veut recuperer la nationalite des auteurs des livres qu'a achete McConaughey
+--On veut recuperer la nationalite de l'auteur du dernier livre qu'a achete McConaughey
 SELECT Nationalite
 FROM Achat, Livres, Auteurs, Clients
 WHERE Livres.IDAuteur = Auteurs.IDAuteur
+AND Achat.IDClient = Clients.IDClient
 AND Livres.ISBN = Achat.ISBN
-AND ACHAT.IDClient = Clients.IDClient
-AND Clients.NomCl = 'McConaughey';
+AND Achat.NoAchat=(SELECT max(NoAchat)
+                  FROM Achat,Clients
+                  WHERE Clients.NomCl='McConaughey'
+                  AND Achat.IDClient=Clients.IDClient);
 
+--Un client veut connaitre le prix du livre Carrie
+SELECT PrixAchat
+FROM Livres
+WHERE Livres.Titre='Carrie';
+
+--On veut changer le patron de l'éditeur Pocket
+UPDATE Editeurs
+SET Patron='Yann Roblin'
+WHERE NomEdit='Pocket';
+
+--On veut connaître la date du premier achat du client 2
+SELECT DateAchat
+FROM Achat
+WHERE NoAchat=(SELECT min(NoAchat)
+              FROM Achat
+              WHERE Achat.IDClient=2);
+
+--On veut la date de naissance de Carpenter
+SELECT NaissanceCl
+FROM Clients
+WHERE NomCl='Carpenter';
