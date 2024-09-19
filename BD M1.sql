@@ -132,7 +132,6 @@ CREATE OR REPLACE TRIGGER Tachat
 AFTER INSERT ON Achat FOR EACH ROW
 EXECUTE PROCEDURE Fachat();
 
---------TODO : TRIGGER SUR EMPRUNT QUI FAIT UN PEU COMME ACHAT-------
 
 --Creation du trigger sur Emprunt qui vérifie le stock avec de permettre l'emprunt et qui met le stock à jour après.
 CREATE OR REPLACE FUNCTION Femprunt()
@@ -147,7 +146,7 @@ RETURNS trigger AS
               SELECT max(NoEmp) FROM Emprunt --On recupere le numero de l'emprunt
               INTO noemprunttmp;
 
-              SELECT ISBN FROM Achat  --On recupere l'ISBN du dernier livre emprunté (on suppose que c'est le NoEmp le plus eleve)
+              SELECT ISBN FROM Emprunt  --On recupere l'ISBN du dernier livre emprunté (on suppose que c'est le NoEmp le plus eleve)
               WHERE NoEmp = noemprunttmp
               INTO isbntmp;
 
@@ -163,6 +162,7 @@ RETURNS trigger AS
                 WHERE ISBN = isbntmp;
                 IF qteStock = qteEmprunt THEN
                   RAISE NOTICE 'Dernier livre emprunté, momentanément indisponible';
+                END IF;
               
               ELSE             --On a pas assez de stock pour satisfaire l'emprunt, on annule l'emprunt
                 DELETE FROM Emprunt WHERE NoEmp = noemprunttmp;
