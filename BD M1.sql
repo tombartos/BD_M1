@@ -161,7 +161,7 @@ RETURNS trigger AS
                 SET qtedispo = qtedispo - qteEmprunt
                 WHERE ISBN = isbntmp;
                 IF qteStock = qteEmprunt THEN
-                  RAISE NOTICE 'Dernier livre emprunté, momentanément indisponible';
+                  RAISE NOTICE 'Dernier livre emprunte, momentanement indisponible';
                 END IF;
               
               ELSE             --On a pas assez de stock pour satisfaire l'emprunt, on annule l'emprunt
