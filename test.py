@@ -2,7 +2,8 @@ import psycopg2
 
 hostname = 'localhost'
 username = 'postgres'
-password = 'Tom141203'
+----------METTRE MDP--------------
+password = '' 
 database = 'postgres'
 
 #Ici votre code d’interrogation de la BDD
