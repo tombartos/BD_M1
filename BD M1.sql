@@ -201,6 +201,7 @@ RETURNS boolean AS
         WHERE Emprunt.NoEmp = Noretour
         AND Livres.ISBN = Emprunt.ISBN;
       END IF;
+      RAISE NOTICE 'Retour effectue';
       RETURN TRUE;
 
     END;
