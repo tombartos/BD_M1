@@ -1,4 +1,4 @@
-﻿--Creation des domaines pour l'etat des livres et le status des emprunts
+﻿--Creation des domaines pour l'etat des livres et le statut des emprunts
 
 CREATE DOMAIN typeEtat
 AS VARCHAR(20) 
@@ -55,8 +55,8 @@ CREATE TABLE Emprunt
   DateDeb DATE NOT NULL,
   DateFin DATE NOT NULL,
   QteEmp INTEGER NOT NULL DEFAULT 1,
-  StatusEmp typeEmp,
-  StatusLivre typeEtat,
+  StatutEmp typeEmp,
+  StatutLivre typeEtat,
   
   CONSTRAINT dates
   CHECK (DateDeb < DateFin)
@@ -178,6 +178,14 @@ CREATE OR REPLACE TRIGGER Temprunt
 AFTER INSERT ON Emprunt FOR EACH ROW
 EXECUTE PROCEDURE Femprunt();
 
+--Création du trigger sur Livres qui remet à jour la QteDispo lorsqu'un client a ramené ses livres empruntés
+CREATE OR REPLACE FUNCTION Fretour()
+RETURN trigger AS
+    $$
+
+
+
+
 --Remplissage des tables
 
 INSERT INTO Auteurs (NomAut, PrenomAut, NaissanceAut, Mort, Nationalite)
@@ -188,6 +196,8 @@ INSERT INTO Auteurs (NomAut, PrenomAut, NaissanceAut, Mort, Nationalite)
 VALUES ('King','Stephen', '21/09/1947', NULL, 'Etats-Unis');
 INSERT INTO Auteurs (NomAut, PrenomAut, NaissanceAut, Mort, Nationalite)
 VALUES ('Hugo','Victor', '26/02/1802', '22/05/1885', 'France');
+INSERT INTO Auteurs (NomAut, PrenomAut, NaissanceAut, Mort, Nationalite)
+VALUES ('Herbert','Franck', '08/10/1920', '11/02/1986', 'Etats-Unis');
 
 INSERT INTO Editeurs (NomEdit, Patron, Pays)
 VALUES ('Le Livre de Poche', 'Audrey Petit', 'France');
@@ -204,6 +214,8 @@ INSERT INTO Livres (ISBN, Titre, IDAuteur, NomEdit, DateSortie, Genre, QteDispo,
 VALUES ('978-2253096764', 'Carrie',3, 'Le Livre de Poche', '05/04/1974', 'Horreur', 4, 8.7);
 INSERT INTO Livres (ISBN, Titre, IDAuteur, NomEdit, DateSortie, Genre, QteDispo, PrixAchat)
 VALUES ('978-2266296144', 'Les Miserables',4, 'Pocket', '01/01/1862', 'Roman', 13, 11.9);
+INSERT INTO Livres (ISBN, Titre, IDAuteur, NomEdit, DateSortie, Genre, QteDispo, PrixAchat)
+VALUES ('978-2266320481', 'Dune - tome 1', 5, 'Pocket', '01/01/1965', 'Science-Fiction', 8, 11.9);
 
 INSERT INTO Clients (NomCl, PrenomCl, NaissanceCl)
 VALUES ('Carpenter', 'Sabrina', '11/05/1999');
@@ -213,6 +225,8 @@ INSERT INTO Clients (NomCl, PrenomCl, NaissanceCl)
 VALUES ('Eilish', 'Billie', '18/12/2001');
 INSERT INTO Clients (NomCl, PrenomCl, NaissanceCl)
 VALUES ('Strong', 'Mark', '05/08/1963');
+INSERT INTO Clients (NomCl, PrenomCl, NaissanceCl)
+VALUES ('Bartier', 'Tom', '14/12/2003');
 
 INSERT INTO Achat (ISBN, IDClient, DateAchat, QteAchat)
 VALUES('978-2253006329', 1, '11/09/2024', 1);
@@ -221,8 +235,10 @@ VALUES('978-2075193993', 2, '12/09/2024', 3);
 INSERT INTO Achat (ISBN, IDClient, DateAchat, QteAchat)
 VALUES('978-2253096764', 2, '14/09/2024', 1);
 
-INSERT INTO Emprunt (ISBN, IDClient, DateDeb, DateFin, QteEmp, StatusEmp, StatusLivre)
+INSERT INTO Emprunt (ISBN, IDClient, DateDeb, DateFin, QteEmp, StatutEmp, StatutLivre)
 VALUES('978-2075193993', 3, '09/09/2024', '15/09/2024', 1, 'non rendu', 'bon');
+INSERT INTO Emprunt(ISBN, IDClient, DateDeb, DateFin, QteEmp, StatutEmp, StatutLivre)
+VALUES('978-2266296144', 5, '20/09/2024', '22/09/2024', 2, 'non rendu', 'bon');
 
 --Quelques requetes d'exemple
 
@@ -258,3 +274,14 @@ WHERE NoAchat=(SELECT min(NoAchat)
 SELECT NaissanceCl
 FROM Clients
 WHERE NomCl='Carpenter';
+
+--On veut augmenter le prix de tout nos livres (l'inflation c'est terrible..)
+UPDATE Livres
+SET PrixAchat = PrixAchat*1.1;
+
+--On veut connaître le titre et le prix du livre le plus cher
+SELECT Titre, PrixAchat
+FROM Livres
+WHERE PrixAchat=(SELECT max(PrixAchat)
+                FROM Livres);
+
