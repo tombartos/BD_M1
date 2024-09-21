@@ -178,10 +178,33 @@ CREATE OR REPLACE TRIGGER Temprunt
 AFTER INSERT ON Emprunt FOR EACH ROW
 EXECUTE PROCEDURE Femprunt();
 
---Création du trigger sur Livres qui remet à jour la QteDispo lorsqu'un client a ramené ses livres empruntés
-CREATE OR REPLACE FUNCTION Fretour()
-RETURN trigger AS
+--Création de la fonction qui devra être appelée pour faire un retour d'emprunt (met à jour le statut de l'emprunt et la qte de livres en stock)
+CREATE OR REPLACE FUNCTION Fretour(Noretour integer)    --Noretour est le NoEmprunt sur lequel on effectue le retour
+RETURNS boolean AS
     $$
+    BEGIN
+      IF (SELECT StatutEmp FROM Emprunt       --Si le livre est déjà rendu on abandonne
+      WHERE NoEmp = Noretour) = 'rendu' THEN
+        RAISE NOTICE 'Livre deja rendu';
+        RETURN FALSE;
+      
+      ELSE
+        UPDATE Emprunt            --On met à jour le statut de l'emprunt
+        SET StatutEmp = 'rendu' 
+        WHERE NoEmp = Noretour;
+
+        UPDATE Livres          --Puis la quantité de stock
+        SET QteDispo = QteDispo + 
+          (SELECT QteEmp FROM Emprunt
+           WHERE NoEmp = Noretour)
+        FROM Emprunt
+        WHERE Emprunt.NoEmp = Noretour
+        AND Livres.ISBN = Emprunt.ISBN;
+      END IF;
+      RETURN TRUE;
+
+    END;
+    $$ LANGUAGE 'plpgsql';
 
 
 
@@ -198,6 +221,8 @@ INSERT INTO Auteurs (NomAut, PrenomAut, NaissanceAut, Mort, Nationalite)
 VALUES ('Hugo','Victor', '26/02/1802', '22/05/1885', 'France');
 INSERT INTO Auteurs (NomAut, PrenomAut, NaissanceAut, Mort, Nationalite)
 VALUES ('Herbert','Franck', '08/10/1920', '11/02/1986', 'Etats-Unis');
+INSERT INTO Auteurs (NomAut, PrenomAut, NaissanceAut, Mort, Nationalite)
+VALUES ('Barastier', 'Jeanne', '26/08/2002', NULL, 'France');
 
 INSERT INTO Editeurs (NomEdit, Patron, Pays)
 VALUES ('Le Livre de Poche', 'Audrey Petit', 'France');
@@ -216,6 +241,8 @@ INSERT INTO Livres (ISBN, Titre, IDAuteur, NomEdit, DateSortie, Genre, QteDispo,
 VALUES ('978-2266296144', 'Les Miserables',4, 'Pocket', '01/01/1862', 'Roman', 13, 11.9);
 INSERT INTO Livres (ISBN, Titre, IDAuteur, NomEdit, DateSortie, Genre, QteDispo, PrixAchat)
 VALUES ('978-2266320481', 'Dune - tome 1', 5, 'Pocket', '01/01/1965', 'Science-Fiction', 8, 11.9);
+INSERT INTO Livres (ISBN, Titre, IDAuteur, NomEdit, DateSortie, Genre, QteDispo, PrixAchat)
+VALUES ('978-0123456789', 'Gauss pour les nuls', 6, 'Pocket', '21/09/2024', 'Educatif', 10, 19.9);
 
 INSERT INTO Clients (NomCl, PrenomCl, NaissanceCl)
 VALUES ('Carpenter', 'Sabrina', '11/05/1999');
@@ -285,3 +312,11 @@ FROM Livres
 WHERE PrixAchat=(SELECT max(PrixAchat)
                 FROM Livres);
 
+--On veut avoir toutes les informations sur les emprunts qui sont en retard
+SELECT * FROM Emprunt 
+WHERE StatutEmp = 'non rendu' 
+AND DateFin < (SELECT NOW());
+
+
+--On veut effectuer le retour du premier emprunt
+SELECT Fretour(1);
