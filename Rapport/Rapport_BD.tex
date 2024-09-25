@@ -34,6 +34,8 @@ tabsize = 4,
     aux commandes et langage SQL et à la création d’une application simple via le langage de programmation python. 
     Le projet se sépare en deux étapes distinctes. La première étape consiste à concevoir et construire une base de 
     données de notre choix. La deuxième étape consiste à réaliser une application qui exploitera cette base de données.
+    Vous avez en pièce jointe à ce document un fichier "BD M1.sql" contenant la liste de toutes les requêtes de création des tables, des triggers et fonction, remplissage des tables,
+    et autres requêtes d'exemple à copier - coller dans un terminal PostGresSQL. Il est recommandé de le faire dans une base de données vide.
 \end{abstract}
 
 \newpage
@@ -66,7 +68,7 @@ longuement traité pendant la licence. Comme il s’agit d’un projet d’initi
     \item L’application sera destinée au personnel d’une librairie non initié à SQL.
     \item Il faut que l'application soit ergonomique, simple d'utilisation tout en restant fonctionnelle.
     \item Elle permet de consulter les différentes tables de la base de données via des actions simples par un non initié à SQL.
-    \item Elle doit permettre au personnel de modifier les différentes tables de la base de données via des actions simples pour un non initié à SQL.
+    \item Elle doit permettre au personnel de modifier les différentes tables (lors d'un achat, d'un emprunt ou d'un réapprovisionnement par exemple) de la base de données via des actions simples pour un non initié à SQL.
     \item Chaque action réalisée sur l'application notamment concernant la modification des tables doit avoir un retour visuel.
 \end{itemize}
 
@@ -115,6 +117,7 @@ AS VARCHAR(20)
 CHECK(VALUE IN('rendu','non rendu'));
 \end{lstlisting}
 
+\newpage
 \section{Déclencheurs}
 Nous avons créé plusieurs déclencheurs qui mettent à jour les tables ou les complètent en fonction de certaines actions.
 
@@ -149,6 +152,8 @@ permettre à un livre d'être écrit par plusieurs auteurs, mettre plusieurs liv
 mettre en place un système de pénalité pour les livres rendus en retard.
 
 \section{Conclusion}
+La première partie de ce mini projet (conception de la BDD) a donc permis aux étudiants qui n'avaient pas étudiés le SQL de le découvrir, le manipuler et de mettre en place une base
+de données simple avec tous les éléments essentiels à son bon fonctionnement.
 Maintenant que nous partons sur de bonnes bases, il nous reste à mettre en place un exemple concret d'une telle application. Dans notre cas nous allons partir sur une application Python Tkinter qui sera
 connectée à la base de données (qui tournera en local sur la même machine).
 \end{document}
