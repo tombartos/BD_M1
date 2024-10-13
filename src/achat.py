@@ -8,6 +8,7 @@ class Achat:
     """Ecran de la table achat avec toutes les operation qui lui correspond"""
     def __init__(self):
         global window
+        self.window=window
         #Recuperation des donnees de la table SQL
         self.conn = initConn()
         req = doQuery(self.conn, "SELECT * FROM ACHAT")
