@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.font as tkfont
 import tkinter.ttk as ttk
+from datetime import date
 from query import *
 window = None
 
@@ -39,13 +40,15 @@ class Achat:
         self.table.column('QteAchat', width=140)
         self.table.column('PrixTotAchat', width=160)
 
+        for e in self.table['columns']:
+            self.table.heading(e, text=e)
+
         self.table.heading('NoAchat', text='Noachat')
         self.table.heading('ISBN', text='ISBN')
         self.table.heading('IDClient', text='IDClient')
         self.table.heading('DateAchat', text='DateAchat')
         self.table.heading('QteAchat', text='QteAchat')
         self.table.heading('PrixTotAchat', text='PrixTotAchat')
-        #self.table['show'] = 'headings'
 
         #Remplissage tableau
         for i in range(len(req)):
@@ -92,7 +95,20 @@ class Achat:
         self.btnconfAchat = tk.Button(self.newframe, text='Confirmer', font=font1, command=self.commandConfBuy)
         self.btnconfAchat.grid(row=6)
 
+        #Creation du label indiquant par la suite si l'operation a reussie ou non
+        self.lblopstate = tk.Label(self.newframe, text="")
+        self.lblopstate.grid(row=7)
 
+    def updatetable(self):
+        """Met à jour l'affichage du tableau"""
+        #Suppression des elements
+        for line in self.table.get_children():
+            self.table.delete(line)
+
+        #Remplissage avec les nouveaux elements
+        req = doQuery(self.conn, "SELECT * FROM ACHAT")
+        for i in range(len(req)):
+            self.table.insert(parent = '', index = i, values=req[i])
 
         
 
@@ -116,8 +132,21 @@ class Achat:
 
     def commandConfBuy(self):
         """Confirme un achat (envoie la requete SQL a la BDD pour ajouter une entree a la table Achat)"""
-        #TODO
-        return
+        #Recuperation des valeurs de la nouvelle entree
+        isbn = self.entISBN.get()
+        idclient = self.entIDClient.get()
+        qteachat = self.entQteAchat.get()
+        dateachat = date.today().strftime("%d/%m/%Y")
+        
+        try:
+            doNoReturnQuery(self.conn, f"INSERT INTO Achat (ISBN, IDClient, DateAchat, QteAchat) VALUES('{isbn}', {idclient}, '{dateachat}', {qteachat});")
+            self.lblopstate.config(text = "Opération Réussie", fg="green")
+            self.updatetable()
+        except:
+            self.lblopstate.config(text = "Opétation échouée, revoyez les entrées", fg="red")
+            doNoReturnQuery(self.conn, "ROLLBACK;")
+        
+        
 
 
 if __name__ == "__main__":
