@@ -54,6 +54,12 @@ class Achat:
         for i in range(len(req)):
             self.table.insert(parent = '', index = i, values=req[i])
 
+        #bind de la table
+        self.table.bind('<ButtonRelease-1>',self.commandSelection)
+        
+        #Variable pour récuper un NoAchat
+        self.na = None
+
         #Boutons nouvelle entree, supprimer et recherche
         font1 = tkfont.Font(family = "Arial", size=18)
 
@@ -127,8 +133,39 @@ class Achat:
 
     def commandDel(self):
         """Supprime l'entree selectionnee"""
-        #TODO
-        return
+        #Vérification qu'il y ait une ligne sélectionné
+        if self.na != None:
+            
+            try:
+                doNoReturnQuery(self.conn,f"DELETE FROM Achat WHERE NoAchat = '{self.na}';")
+                self.lblopstate.config(text = "Opération Réussie", fg="green")
+                self.updatetable()
+                self.ButDel.configure(state = "disabled")
+            except:
+                self.lblopstate.config(text = "Opétation échouée, revoyez les entrées", fg="red")
+                doNoReturnQuery(self.conn, "ROLLBACK;")      
+    
+    def commandSelection(self,event) :
+        """récupère le NoAchat de la ligne sélectionner."""
+        # récupération de la ligne
+        value = self.table.item(self.table.selection())['values']
+        
+        #Vérification si la ligne est vide ou non
+        if value :
+        
+            #Récupération de la valeur de NoAchat
+            if value[0] != self.na:
+                self.na = value[0]
+                self.ButDel.configure(state = "normal")
+                
+            #Déselectionne si la ligne est resélectionné
+            else :
+                self.table.selection_toggle(self.table.selection())
+                self.na = None
+                self.ButDel.configure(state = "disabled")
+        else :
+            self.na = None
+            self.ButDel.configure(state = "disabled")
 
     def commandConfBuy(self):
         """Confirme un achat (envoie la requete SQL a la BDD pour ajouter une entree a la table Achat)"""
