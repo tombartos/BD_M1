@@ -76,35 +76,78 @@ class Achat:
         self.lblnew = tk.Label(window, text="Nouvel Achat", font=font0)
 
         #Frame pour les entrees des nouveaux attributs qu'on cache au debut
-
         self.newframe=tk.Frame(window)
-        self.newframevis=False   #Booleen pour la visibilite de la frame (et du label)
-
 
         #Attributs pour nouvelle entree
-        font2 = tkfont.Font(family="Calibri", size = 30)
-        self.lblISBN = tk.Label(self.newframe, text="ISBN", font=font2)
-        self.lblISBN.grid(row=0, sticky='nsew')
-        self.entISBN = tk.Entry(self.newframe)
-        self.entISBN.grid(row=1)
+        font2 = tkfont.Font(family="Calibri", size = 25)
+        self.lblnewISBN = tk.Label(self.newframe, text="ISBN", font=font2)
+        self.lblnewISBN.grid(row=0, sticky='nsew')
+        self.entnewISBN = tk.Entry(self.newframe)
+        self.entnewISBN.grid(row=1)
 
-        self.lblIDClient = tk.Label(self.newframe, text="IDClient", font=font2)
-        self.lblIDClient.grid(row=2, column=0)
-        self.entIDClient = tk.Entry(self.newframe)
-        self.entIDClient.grid(row=3)
+        self.lblnewIDClient = tk.Label(self.newframe, text="IDClient", font=font2)
+        self.lblnewIDClient.grid(row=2, column=0)
+        self.entnewIDClient = tk.Entry(self.newframe)
+        self.entnewIDClient.grid(row=3)
 
-        self.lblQteAchat = tk.Label(self.newframe, text="QteAchat", font=font2)
-        self.lblQteAchat.grid(row=4)
-        self.entQteAchat = tk.Entry(self.newframe)
-        self.entQteAchat.grid(row=5)
+        self.lblnewQteAchat = tk.Label(self.newframe, text="QteAchat", font=font2)
+        self.lblnewQteAchat.grid(row=4)
+        self.entnewQteAchat = tk.Entry(self.newframe)
+        self.entnewQteAchat.grid(row=5)
 
         self.btnconfAchat = tk.Button(self.newframe, text='Confirmer', font=font1, command=self.commandConfBuy)
         self.btnconfAchat.grid(row=6)
 
         #Creation du label indiquant par la suite si l'operation a reussie ou non
-        self.lblopstate = tk.Label(self.newframe, text="")
-        self.lblopstate.grid(row=7)
+        self.lblnewstate = tk.Label(self.newframe, text="")
+        self.lblnewstate.grid(row=7)
 
+        #Label Rechercher
+        self.lblsearch = tk.Label(window, text="Rechercher", font=font0)
+
+        #Frame pour les entrees de la recherche
+        self.searchframe=tk.Frame(window)
+
+        #Attributs Recherche
+        # NoAchat Entry
+        self.lblsearchNoAchat = tk.Label(self.searchframe, text="NoAchat", font=font2)
+        self.lblsearchNoAchat.grid(row=0)
+        self.entsearchNoAchat = tk.Entry(self.searchframe)
+        self.entsearchNoAchat.grid(row=1)
+
+        # ISBN Entry
+        self.lblsearchISBN = tk.Label(self.searchframe, text="ISBN", font=font2)
+        self.lblsearchISBN.grid(row=2)
+        self.entsearchISBN = tk.Entry(self.searchframe)
+        self.entsearchISBN.grid(row=3)
+
+        # IDClient Entry
+        self.lblsearchIDClient = tk.Label(self.searchframe, text="IDClient", font=font2)
+        self.lblsearchIDClient.grid(row=4)
+        self.entsearchIDClient = tk.Entry(self.searchframe)
+        self.entsearchIDClient.grid(row=5)
+
+        # DateAchat Entry
+        self.lblsearchDateAchat = tk.Label(self.searchframe, text="DateAchat", font=font2)
+        self.lblsearchDateAchat.grid(row=6)
+        self.entsearchDateAchat = tk.Entry(self.searchframe)
+        self.entsearchDateAchat.grid(row=7)
+
+        # QteAchat Entry
+        self.lblsearchQteAchat = tk.Label(self.searchframe, text="QteAchat", font=font2)
+        self.lblsearchQteAchat.grid(row=8)
+        self.entsearchQteAchat = tk.Entry(self.searchframe)
+        self.entsearchQteAchat.grid(row=9)
+
+        # PrixTotAchat Entry
+        self.lblsearchPrixTotAchat = tk.Label(self.searchframe, text="PrixTotAchat", font=font2)
+        self.lblsearchPrixTotAchat.grid(row=10)
+        self.entsearchPrixTotAchat = tk.Entry(self.searchframe)
+        self.entsearchPrixTotAchat.grid(row=11)
+
+        self.btnconfSearch = tk.Button(self.searchframe, text="Rechercher", font=font1, command=self.commandConfSearch)
+        self.btnconfSearch.grid(row=12)
+        
     def updatetable(self):
         """Met à jour l'affichage du tableau"""
         #Suppression des elements
@@ -120,16 +163,24 @@ class Achat:
 
     def commandBuy(self):
         """Affiche l'interface pour ajouter une nouvelle entree a la table"""
+        self.ButSearch.configure(state="active")
         self.ButNew.configure(state="disabled")
+        self.searchframe.grid_forget()
         self.newframe.grid(column=3, row = 1, sticky="nsew")
+        self.lblsearch.grid_forget()
         self.lblnew.grid(column=3, row=0)
-        self.newframevis = True
         #TODO: Trouver le moyen de les decaler un peu sur la droite, peut etre avec rowconfigure
     
     def commandSearch(self):
         """Affiche l'interface pour effectuer une recherche"""
-        #TODO
-        return
+        self.ButNew.configure(state="active")
+        self.ButSearch.configure(state="disabled")
+        self.newframe.grid_forget()
+        self.searchframe.grid(column=3, row=1, sticky="nsew")
+        self.lblnew.grid_forget()
+        self.lblsearch.grid(column=3, row=0)
+
+
 
     def commandDel(self):
         """Supprime l'entree selectionnee"""
@@ -138,11 +189,11 @@ class Achat:
             
             try:
                 doNoReturnQuery(self.conn,f"DELETE FROM Achat WHERE NoAchat = '{self.na}';")
-                self.lblopstate.config(text = "Opération Réussie", fg="green")
+                self.lblnewstate.config(text = "Opération Réussie", fg="green")
                 self.updatetable()
                 self.ButDel.configure(state = "disabled")
             except:
-                self.lblopstate.config(text = "Opétation échouée, revoyez les entrées", fg="red")
+                self.lblnewstate.config(text = "Opétation échouée, revoyez les entrées", fg="red")
                 doNoReturnQuery(self.conn, "ROLLBACK;")      
     
     def commandSelection(self,event) :
@@ -170,19 +221,53 @@ class Achat:
     def commandConfBuy(self):
         """Confirme un achat (envoie la requete SQL a la BDD pour ajouter une entree a la table Achat)"""
         #Recuperation des valeurs de la nouvelle entree
-        isbn = self.entISBN.get()
-        idclient = self.entIDClient.get()
-        qteachat = self.entQteAchat.get()
+        isbn = self.entnewISBN.get()
+        idclient = self.entnewIDClient.get()
+        qteachat = self.entnewQteAchat.get()
         dateachat = date.today().strftime("%d/%m/%Y")
         
         try:
             doNoReturnQuery(self.conn, f"INSERT INTO Achat (ISBN, IDClient, DateAchat, QteAchat) VALUES('{isbn}', {idclient}, '{dateachat}', {qteachat});")
-            self.lblopstate.config(text = "Opération Réussie", fg="green")
+            self.lblnewstate.config(text = "Opération Réussie", fg="green")
             self.updatetable()
         except:
-            self.lblopstate.config(text = "Opétation échouée, revoyez les entrées", fg="red")
+            self.lblnewstate.config(text = "Opétation échouée, revoyez les entrées", fg="red")
             doNoReturnQuery(self.conn, "ROLLBACK;")
         
+    def commandConfSearch(self):
+        """Confirme une recherche(envoie la requete SQL et affiche la reponse dans le tableau)"""
+        #Construction de la requete
+        req = "SELECT * FROM Achat WHERE "
+        noachat = self.entsearchNoAchat.get()
+        isbn = self.entsearchISBN.get()
+        idclient = self.entsearchIDClient.get()
+        dateachat = self.entsearchDateAchat.get()
+        qteachat = self.entsearchQteAchat.get()
+        prixtotachat = self.entsearchPrixTotAchat.get()
+        if noachat != "":
+            req+= "Noachat = " + noachat + " AND "
+        if isbn != "":
+            req+= "ISBN = " + isbn + " AND "
+        if idclient != "":
+            req+= "IDClient = " + idclient + " AND "
+        if dateachat != "":
+            req+= "DateAchat = " + dateachat + " AND "
+        if qteachat != "":
+            req+= "QteAchat = " + qteachat + " AND "
+        if prixtotachat != "":
+            req+= "PrixTotAchat = " + prixtotachat
+        
+        if req[-5:] == " AND ":
+            req = req[:-5]
+        req+=";"
+        
+        res = doQuery(self.conn, req)   #Envoie de la requete et recuperation du resulat
+        
+        for line in self.table.get_children():  #Suppression des elements du tableau pour afficher le resultat de la requete
+            self.table.delete(line)
+        
+        for i in range(len(res)):
+            self.table.insert(parent = '', index = i, values=res[i])
         
 
 
