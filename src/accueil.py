@@ -1,27 +1,28 @@
 import tkinter as tk
 import tkinter.font as tkfont
 import main
-
-window = None
+import achat
+import livres
+import auteurs
 
 class Accueil:
 
-    def __init__(self):
+    def __init__(self, window):
         """Ouvre la page d'accueil"""
-        global window
+        self.window = window
         font0 = tkfont.Font(family="Times New Roman", size=45)
         font1 = tkfont.Font(family="Times New Roman", size=20)
 
-        window.grid_rowconfigure(0, weight=1)
-        window.grid_rowconfigure(1, weight=1)
-        window.grid_rowconfigure(2, weight=2)
-        window.grid_columnconfigure(0, weight=50)
-        window.grid_columnconfigure(1, weight=1)
+        self.window.grid_rowconfigure(0, weight=1)
+        self.window.grid_rowconfigure(1, weight=1)
+        self.window.grid_rowconfigure(2, weight=2)
+        self.window.grid_columnconfigure(0, weight=50)
+        self.window.grid_columnconfigure(1, weight=1)
 
-        self.lblaccueil = tk.Label(window, text="Accueil", font=font0)
+        self.lblaccueil = tk.Label(self.window, text="Accueil", font=font0)
         self.lblaccueil.grid(row=0)
 
-        self.frame = tk.Frame(window)
+        self.frame = tk.Frame(self.window)
         self.frame.grid(row=1)
 
         self.btn_achat = tk.Button(self.frame, text="Achat", font=font1, command=self.command_achat)
@@ -37,10 +38,13 @@ class Accueil:
         self.btn_editeurs = tk.Button(self.frame, text="Editeurs", font=font1, command=self.command_editeurs)
         self.btn_editeurs.grid(row = 1, column = 2)
 
-        self.btn_retour = tk.Button(window, text="retour", font=font1, command=self.command_retour)
+        self.btn_retour = tk.Button(self.window, text="retour", font=font1, command=self.command_retour)
         self.btn_retour.grid(row = 2, column = 0)
 
     def command_achat(self):
+        for widget in self.window.winfo_children(): #Suppresssion de tous les elements de la fenetre
+            widget.destroy()
+        achat.Achat(self.window)
         return
 
     def command_emprunt(self):
@@ -50,21 +54,26 @@ class Accueil:
         return
 
     def command_livres(self):
-        return
+        for widget in self.window.winfo_children():
+            widget.destroy()
+        livres.Livres(self.window)
 
     def command_auteurs(self):
-        return
+        for widget in self.window.winfo_children():
+            widget.destroy()
+        auteurs.Auteurs(self.window)
 
     def command_editeurs(self):
         return
 
     def command_retour(self):
-        # for widget in window.winfo_children():
-        #     widget.destroy()
-        #a = main()
+        """Retourne au premier ecran"""
+        for widget in self.window.winfo_children(): #Suppresssion de tous les elements de la fenetre
+            widget.destroy()
+        main.Main(self.window)              #On retourne a l'ecran precedent
 
 if __name__ == '__main__':
     window = tk.Tk()
     window.geometry("1400x720")
-    a = Accueil()
+    a = Accueil(window)
     tk.mainloop()

@@ -3,33 +3,38 @@ import tkinter.font as tkfont
 import tkinter.ttk as ttk
 from datetime import date
 from query import *
-window = None
+import accueil
 
 class Achat:
     """Ecran de la table achat avec toutes les operation qui lui correspond"""
-    def __init__(self):
-        global window
+    def __init__(self, window):
         self.window=window
+
+        self.window.grid_columnconfigure(0, weight=1)
+        self.window.grid_columnconfigure(1, weight=20)
+        self.window.grid_columnconfigure(2, weight=10)
+
         #Recuperation des donnees de la table SQL
         self.conn = initConn()
         req = doQuery(self.conn, "SELECT * FROM ACHAT")
         
+        #Bouton retour
+        font1 = tkfont.Font(family = "Times New Roman", size=18)
+        btnretour = tk.Button(self.window, text="Retour", font=font1, command=self.commandback)
+        btnretour.grid(column=0, row=0, sticky="nw")
+
         #Label en haut de l'ecran nom de la table
-        font0 = tkfont.Font(family="Arial", size=30, weight="bold")
-        lbl1 = tk.Label(window, text="Achats", font=font0)
+        font0 = tkfont.Font(family="Times New Roman", size=30, weight="bold")
+        lbl1 = tk.Label(self.window, text="Achats", font=font0)
         lbl1.grid(column=1, row=0)
-
-        
-
-
 
         #Configuration police d'ecriture tableau
         style = ttk.Style()
-        style.configure("Treeview.Heading", font=('Arial', 17))
+        style.configure("Treeview.Heading", font=('Times New Roman', 17))
         style.configure("Treeview", font=('Calibri', 15))
 
         #Creation tableau
-        self.table=ttk.Treeview(window, height=22)
+        self.table=ttk.Treeview(self.window, height=22)
         self.table.grid(column=0, row=1, columnspan=3)
         self.table['columns'] = ['NoAchat', 'ISBN', 'IDClient', 'DateAchat', 'QteAchat', 'PrixTotAchat']
         self.table.column('#0', width=0, stretch=0)
@@ -61,22 +66,22 @@ class Achat:
         self.na = None
 
         #Boutons nouvelle entree, supprimer et recherche
-        font1 = tkfont.Font(family = "Arial", size=18)
-
-        self.ButNew = tk.Button(window, text='Nouvel Achat', font=font1, command=self.commandBuy)
-        self.ButNew.grid(row=2, column=0)
         
-        self.ButDel = tk.Button(window, text='Supprimer Achat', font=font1, state='disabled', command=self.commandDel)
+
+        self.ButNew = tk.Button(self.window, text='Nouvel Achat', font=font1, command=self.commandBuy)
+        self.ButNew.grid(row=2, column=0, sticky='e')
+        
+        self.ButDel = tk.Button(self.window, text='Supprimer Achat', font=font1, state='disabled', command=self.commandDel)
         self.ButDel.grid(row=2, column =1)
 
-        self.ButSearch = tk.Button(window, text='Rechercher', font=font1, command=self.commandSearch)
+        self.ButSearch = tk.Button(self.window, text='Rechercher', font=font1, command=self.commandSearch)
         self.ButSearch.grid(row=2, column = 2)
 
         #Label Nouvelle entree
-        self.lblnew = tk.Label(window, text="Nouvel Achat", font=font0)
+        self.lblnew = tk.Label(self.window, text="Nouvel Achat", font=font0)
 
         #Frame pour les entrees des nouveaux attributs qu'on cache au debut
-        self.newframe=tk.Frame(window)
+        self.newframe=tk.Frame(self.window)
 
         #Attributs pour nouvelle entree
         font2 = tkfont.Font(family="Calibri", size = 25)
@@ -103,10 +108,10 @@ class Achat:
         self.lblnewstate.grid(row=7)
 
         #Label Rechercher
-        self.lblsearch = tk.Label(window, text="Rechercher", font=font0)
+        self.lblsearch = tk.Label(self.window, text="Rechercher", font=font0)
 
         #Frame pour les entrees de la recherche
-        self.searchframe=tk.Frame(window)
+        self.searchframe=tk.Frame(self.window)
 
         #Attributs Recherche
         # NoAchat Entry
@@ -145,8 +150,12 @@ class Achat:
         self.entsearchPrixTotAchat = tk.Entry(self.searchframe)
         self.entsearchPrixTotAchat.grid(row=11)
 
+        #Bouton Confirmer Recherche
         self.btnconfSearch = tk.Button(self.searchframe, text="Rechercher", font=font1, command=self.commandConfSearch)
         self.btnconfSearch.grid(row=12)
+
+        #Label Erreur recherche vide
+        self.lblconfSearch = tk.Label(self.searchframe, text="Veuillez remplir au moins un champ", fg='red')
         
     def updatetable(self):
         """Met à jour l'affichage du tableau"""
@@ -163,6 +172,7 @@ class Achat:
 
     def commandBuy(self):
         """Affiche l'interface pour ajouter une nouvelle entree a la table"""
+        self.updatetable()  #On fait une update au cas ou on etait dans recherche pour reafficher toute la table
         self.ButSearch.configure(state="active")
         self.ButNew.configure(state="disabled")
         self.searchframe.grid_forget()
@@ -244,6 +254,11 @@ class Achat:
         dateachat = self.entsearchDateAchat.get()
         qteachat = self.entsearchQteAchat.get()
         prixtotachat = self.entsearchPrixTotAchat.get()
+
+        if noachat == isbn == idclient == dateachat == qteachat == prixtotachat == "":
+            self.lblconfSearch.grid(row=13)
+            return
+
         if noachat != "":
             req+= "Noachat = " + noachat + " AND "
         if isbn != "":
@@ -251,7 +266,7 @@ class Achat:
         if idclient != "":
             req+= "IDClient = " + idclient + " AND "
         if dateachat != "":
-            req+= "DateAchat = " + dateachat + " AND "
+            req+= "DateAchat = '" + dateachat + "' AND "
         if qteachat != "":
             req+= "QteAchat = " + qteachat + " AND "
         if prixtotachat != "":
@@ -260,6 +275,7 @@ class Achat:
         if req[-5:] == " AND ":
             req = req[:-5]
         req+=";"
+        self.lblconfSearch.grid_forget() #On supprime le label d'erreur au cas ou il etait present
         
         res = doQuery(self.conn, req)   #Envoie de la requete et recuperation du resulat
         
@@ -268,11 +284,17 @@ class Achat:
         
         for i in range(len(res)):
             self.table.insert(parent = '', index = i, values=res[i])
+    
+    def commandback(self):
+        """Retourne a l'ecran d'accueil"""
+        for widget in self.window.winfo_children(): #Suppresssion de tous les elements de la fenetre
+            widget.destroy()
+        accueil.Accueil(self.window)
         
 
 
 if __name__ == "__main__":
     window = tk.Tk()
     window.geometry("1400x720")
-    a = Achat()
+    a = Achat(window)
     tk.mainloop()
