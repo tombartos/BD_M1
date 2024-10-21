@@ -14,8 +14,15 @@ def doQuery(conn,SQL) :
     return res
 
 def doNoReturnQuery(conn, SQL):
-    """Envoie une requete SQL qui n'attend pas de retour (un INSERT par exemple)"""
+    """Envoie une requete SQL qui n'attend pas forcement retour (un INSERT par exemple)"""
     cur = conn.cursor()
     cur.execute(SQL)
     conn.commit()
+    res = False
+    if len(conn.notices) > 0:
+        res = conn.notices[-1]
     cur.close()
+    if res:
+        return res              #Mauvaise ecriture des triggers, renvoient des notices au lieu de renvoyer des erreurs donc oblige de gerer comme ca
+
+    

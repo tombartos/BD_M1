@@ -237,8 +237,11 @@ class Achat:
         dateachat = date.today().strftime("%d/%m/%Y")
         
         try:
-            doNoReturnQuery(self.conn, f"INSERT INTO Achat (ISBN, IDClient, DateAchat, QteAchat) VALUES('{isbn}', {idclient}, '{dateachat}', {qteachat});")
-            self.lblnewstate.config(text = "Opération Réussie", fg="green")
+            a = doNoReturnQuery(self.conn, f"INSERT INTO Achat (ISBN, IDClient, DateAchat, QteAchat) VALUES('{isbn}', {idclient}, '{dateachat}', {qteachat});")
+            if a == None:
+                self.lblnewstate.config(text = "Opération Réussie", fg="green")
+            else:
+                self.lblnewstate.config(text="Info : \n" + a, fg="orange")       #Mauvaise ecriture des triggers de la base, renvoient des notices au lieu de renvoyer des erreurs donc oblige de gerer comme ca
             self.updatetable()
         except:
             self.lblnewstate.config(text = "Opétation échouée, revoyez les entrées", fg="red")

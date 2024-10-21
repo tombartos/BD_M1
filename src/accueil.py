@@ -4,6 +4,9 @@ import main
 import achat
 import livres
 import auteurs
+import clients
+import emprunt
+import editeurs
 
 class Accueil:
 
@@ -48,10 +51,14 @@ class Accueil:
         return
 
     def command_emprunt(self):
-        return
+        for widget in self.window.winfo_children():
+            widget.destroy()
+        emprunt.Emprunt(self.window)
 
     def command_clients(self):
-        return
+        for widget in self.window.winfo_children():
+            widget.destroy()
+        clients.Clients(self.window)
 
     def command_livres(self):
         for widget in self.window.winfo_children():
@@ -64,7 +71,9 @@ class Accueil:
         auteurs.Auteurs(self.window)
 
     def command_editeurs(self):
-        return
+        for widget in self.window.winfo_children():
+            widget.destroy()
+        editeurs.Editeurs(self.window)
 
     def command_retour(self):
         """Retourne au premier ecran"""
