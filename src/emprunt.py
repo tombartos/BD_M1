@@ -355,6 +355,10 @@ class Emprunt:
         noemp = self.entgbNoEmp.get()
         DateFin = self.entgbDateFin.get()
         statutlivre = self.entgbStatutLivre.get()
+        if statutlivre != "" and statutlivre != "bon" and statutlivre != "perdu" and statutlivre != "degrade":
+            self.lblgbstate.config(text="StatutLivre doit etre bon, perdu ou degrade", fg="red")
+            return
+        
         try:
             a = doNoReturnQuery(self.conn, f"SELECT Fretour({noemp});")
             if a == None:
