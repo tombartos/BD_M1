@@ -59,7 +59,7 @@ CREATE TABLE Emprunt
   StatutLivre typeEtat,
   
   CONSTRAINT dates
-  CHECK (DateDeb < DateFin)
+  CHECK (DateDeb <= DateFin)
 );
 
 CREATE TABLE Achat

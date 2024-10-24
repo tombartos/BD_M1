@@ -61,9 +61,16 @@ class Emprunt:
         # Variable pour recuperer un NoEmp
         self.ne = None
 
-        # Boutons nouvelle entree, supprimer et recherche
-        self.ButNew = tk.Button(self.window, text='Nouvel Emprunt', font=font1, command=self.commandBorrow)
-        self.ButNew.grid(row=2, column=0, sticky='e')
+        #Frame pour les boutons ajouter et rendre emprunt
+        self.btframe = tk.Frame(self.window)       
+        self.btframe.grid(row=2, column=1, sticky='nsew')
+
+        # Boutons nouvelle entree, Rendre,  supprimer et recherche
+        self.ButNew = tk.Button(self.btframe, text='Nouvel Emprunt', font=font1, command=self.commandBorrow)
+        self.ButNew.grid(row=0, pady=5)
+
+        self.ButGB = tk.Button(self.btframe, text='Rendre Emprunt', font=font1, command=self.commandGB)
+        self.ButGB.grid(row=1, pady=5)
         
         self.ButDel = tk.Button(self.window, text='Supprimer Emprunt', font=font1, state='disabled', command=self.commandDel)
         self.ButDel.grid(row=2, column=1)
@@ -71,8 +78,8 @@ class Emprunt:
         self.ButSearch = tk.Button(self.window, text='Rechercher', font=font1, command=self.commandSearch)
         self.ButSearch.grid(row=2, column=2)
 
-        # Label Nouvelle entree
-        self.lblnew = tk.Label(self.window, text="Nouvel Emprunt", font=font0)
+        # Label pour l'operation selectionee
+        self.lblop = tk.Label(self.window, text="", font=font0)
 
         # Frame pour les entrees des nouveaux attributs qu'on cache au debut
         self.newframe = tk.Frame(self.window)
@@ -111,9 +118,6 @@ class Emprunt:
         # Creation du label indiquant par la suite si l'operation a reussie ou non
         self.lblnewstate = tk.Label(self.newframe, text="")
         self.lblnewstate.grid(row=11)
-
-        # Label Rechercher
-        self.lblsearch = tk.Label(self.window, text="Rechercher", font=font0)
 
         # Frame pour les entrees de la recherche
         self.searchframe = tk.Frame(self.window)
@@ -173,6 +177,32 @@ class Emprunt:
 
         # Label Erreur recherche vide
         self.lblconfSearch = tk.Label(self.searchframe, text="Veuillez remplir au moins un champ", fg='red')
+
+        #Frame Rendre Emprunt
+        self.gbframe = tk.Frame(self.window)
+
+        # Attributs Rendre Emprunt
+        self.lblgbNoEmp = tk.Label(self.gbframe, text="NoEmp", font=font2)
+        self.lblgbNoEmp.grid(row=0)
+        self.entgbNoEmp = tk.Entry(self.gbframe)
+        self.entgbNoEmp.grid(row=1)
+
+        self.lblgbDateFin = tk.Label(self.gbframe, text="DateFin", font=font2)
+        self.lblgbDateFin.grid(row=2)
+        self.entgbDateFin = tk.Entry(self.gbframe)
+        self.entgbDateFin.grid(row=3)
+
+        self.lblgbStatutLivre = tk.Label(self.gbframe, text="StatutLivre", font=font2)
+        self.lblgbStatutLivre.grid(row=4)
+        self.entgbStatutLivre = tk.Entry(self.gbframe)
+        self.entgbStatutLivre.grid(row=5)
+
+        self.btnconfGB = tk.Button(self.gbframe, text='Confirmer', font=font1, command=self.commandConfGB)
+        self.btnconfGB.grid(row=6)
+
+        # Label pour retour de l'operation
+        self.lblgbstate = tk.Label(self.gbframe, text="")
+        self.lblgbstate.grid(row=7)
         
     def updatetable(self):
         """Met à jour l'affichage du tableau"""
@@ -189,20 +219,24 @@ class Emprunt:
         """Affiche l'interface pour ajouter une nouvelle entree a la table"""
         self.updatetable()  # On fait une update au cas ou on etait dans recherche pour reafficher toute la table
         self.ButSearch.configure(state="active")
+        self.ButGB.configure(state="active")
         self.ButNew.configure(state="disabled")
         self.searchframe.grid_forget()
+        self.gbframe.grid_forget()
         self.newframe.grid(column=3, row=1, sticky="nsew")
-        self.lblsearch.grid_forget()
-        self.lblnew.grid(column=3, row=0)
+        self.lblop.configure(text="Nouvel Emprunt")
     
     def commandSearch(self):
         """Affiche l'interface pour effectuer une recherche"""
         self.ButNew.configure(state="active")
+        self.ButGB.configure(state="active")
         self.ButSearch.configure(state="disabled")
         self.newframe.grid_forget()
+        self.gbframe.grid_forget()
         self.searchframe.grid(column=3, row=1, sticky="nsew")
         self.lblnew.grid_forget()
-        self.lblsearch.grid(column=3, row=0)
+        self.lblop.configure(text="Rechercher")
+
 
     def commandDel(self):
         """Supprime l'entree selectionnee"""
@@ -305,6 +339,49 @@ class Emprunt:
         
         for i in range(len(res)):
             self.table.insert(parent='', index=i, values=res[i])
+
+    def commandGB(self):
+        """Change le statut d'un emprunt a rendu et permet de modifier l'etat et la date de retour"""
+        self.lblop.configure(text="Rendre Emprunt")
+        self.newframe.grid_forget()
+        self.searchframe.grid_forget()
+        self.gbframe.grid(column=3, row=1, sticky="nsew")
+        self.ButNew.configure(state="active")
+        self.ButSearch.configure(state="active")
+        self.ButGB.configure(state="disabled")
+
+    def commandConfGB(self):
+        """Confirme le retour d'un emprunt (envoie la requete SQL pour modifier l'etat de l'emprunt)"""
+        noemp = self.entgbNoEmp.get()
+        DateFin = self.entgbDateFin.get()
+        statutlivre = self.entgbStatutLivre.get()
+        try:
+            a = doNoReturnQuery(self.conn, f"SELECT Fretour({noemp});")
+            if a == None:
+                self.lblgbstate.config(text="Opération Réussie", fg="green")
+            else:
+                self.lblgbstate.config(text="Info :\n" + a, fg="orange")            #Mauvaise ecriture des triggers de la base, renvoient des notices au lieu de renvoyer des erreurs donc oblige de gerer comme ca
+        except Exception as e:
+            print(e)
+            self.lblnewstate.config(text="Opétation échouée, revoyez les entrées \n" + str(e), fg="red")
+            doNoReturnQuery(self.conn, "ROLLBACK;")
+        
+        if statutlivre != "" or DateFin != "":
+            req = "UPDATE Emprunt SET "                                                                    #L'operation doit se faire en 2 parties vu comlmment le trigger est ecrit, d'abord on appelle Freour puis on modifie le statut du livre et la date de retour
+            if statutlivre != "":
+                req += f"StatutLivre = '{statutlivre}', "
+            if DateFin != "":
+                req += f"DateFin = '{DateFin}' "
+            if req[-2:] == ", ":
+                req = req[:-2]
+            req += f" WHERE NoEmp = {noemp};"
+            try:
+                doNoReturnQuery(self.conn, req)
+                self.updatetable()
+            except Exception as e:
+                self.lblgbstate.config(text="Opétation échouée, revoyez les entrées\n" + e, fg="red")
+                doNoReturnQuery(self.conn, "ROLLBACK;")
+        self.updatetable()
     
     def commandback(self):
         """Retourne a l'ecran d'accueil"""
